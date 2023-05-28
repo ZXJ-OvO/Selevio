@@ -3,35 +3,45 @@ package com.zxj.utils;
 import cn.hutool.core.util.StrUtil;
 
 
+/**
+ * Regular expression tool class: this class verification is reversed
+ */
 public class RegexUtils {
     /**
-     * 是否是无效手机格式
-     * @param phone 要校验的手机号
-     * @return true:符合，false：不符合
+     * Verify whether the string is a invalid phone number
+     *
+     * @param phone phone number to be verified
+     * @return true: valid, false: invalid
      */
-    public static boolean isPhoneInvalid(String phone){
+    public static boolean isPhoneInvalid(String phone) {
         return mismatch(phone, RegexPatterns.PHONE_REGEX);
     }
     /**
-     * 是否是无效邮箱格式
-     * @param email 要校验的邮箱
-     * @return true:符合，false：不符合
+     * Verify whether the string is a invalid email
+     *
+     * @param email email to be verified
+     * @return true: valid, false: invalid
      */
-    public static boolean isEmailInvalid(String email){
+    public static boolean isEmailInvalid(String email) {
         return mismatch(email, RegexPatterns.EMAIL_REGEX);
     }
-
     /**
-     * 是否是无效验证码格式
-     * @param code 要校验的验证码
-     * @return true:符合，false：不符合
+     * Verify whether the string is a invalid code
+     *
+     * @param code code to be verified
+     * @return true: valid, false: invalid
      */
-    public static boolean isCodeInvalid(String code){
+    public static boolean isCodeInvalid(String code) {
         return mismatch(code, RegexPatterns.VERIFY_CODE_REGEX);
     }
-
-    // 校验是否不符合正则格式
-    private static boolean mismatch(String str, String regex){
+    /**
+     * Verify whether the string is mismatch regular expression
+     *
+     * @param str   string to be verified
+     * @param regex regular expression
+     * @return true: the string is empty or null; !str.matches(regex): true : mismatch ; false: match
+     */
+    private static boolean mismatch(String str, String regex) {
         if (StrUtil.isBlank(str)) {
             return true;
         }
