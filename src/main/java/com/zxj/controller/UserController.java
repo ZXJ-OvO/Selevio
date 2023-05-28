@@ -3,9 +3,12 @@ package com.zxj.controller;
 
 import com.zxj.dto.LoginFormDTO;
 import com.zxj.dto.Result;
+import com.zxj.dto.UserDTO;
+import com.zxj.entity.User;
 import com.zxj.entity.UserInfo;
 import com.zxj.service.IUserInfoService;
 import com.zxj.service.IUserService;
+import com.zxj.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,8 +44,9 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody LoginFormDTO loginForm, HttpSession session) {
-        return userService.login(loginForm,session);
+        return userService.login(loginForm, session);
     }
+
 
     /**
      * 登出功能
@@ -55,10 +59,14 @@ public class UserController {
         return Result.fail("功能未完成");
     }
 
+    /**
+     * get current user information
+     */
     @GetMapping("/me")
     public Result me() {
-        // TODO 获取当前登录的用户并返回
-        return Result.fail("功能未完成");
+        // LoginInterceptor.preHandle() has already put current user information into UserHolder
+        User user = UserHolder.getUser();
+        return Result.ok(user);
     }
 
     @GetMapping("/info/{id}")
