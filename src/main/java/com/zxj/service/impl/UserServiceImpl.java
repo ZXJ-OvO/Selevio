@@ -1,14 +1,17 @@
 package com.zxj.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zxj.dto.LoginFormDTO;
 import com.zxj.dto.Result;
+import com.zxj.dto.UserDTO;
 import com.zxj.entity.User;
 import com.zxj.mapper.UserMapper;
 import com.zxj.service.IUserService;
 import com.zxj.utils.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
@@ -75,7 +78,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         // 7. save user information to session
-        session.setAttribute("user", user);
+        session.setAttribute("user", BeanUtil.copyProperties(user, UserDTO.class));
 
         /*
             The principle of session is the same as that of cookie.

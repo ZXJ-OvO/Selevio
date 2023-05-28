@@ -11,19 +11,19 @@ public class UserHolder {
     /**
      * define a static final ThreadLocal object to operate user information
      */
-    private static final ThreadLocal<User> threadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<UserDTO> threadLocal = new ThreadLocal<>();
 
     /**
      * save user information to ThreadLocal
      */
-    public static void saveUser(User user){
+    public static void saveUser(UserDTO user){
         threadLocal.set(user);
     }
 
     /**
      * get user information from ThreadLocal
      */
-    public static User getUser(){
+    public static UserDTO getUser(){
         return threadLocal.get();
     }
 

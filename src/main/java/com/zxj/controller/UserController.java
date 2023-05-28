@@ -65,7 +65,7 @@ public class UserController {
     @GetMapping("/me")
     public Result me() {
         // LoginInterceptor.preHandle() has already put current user information into UserHolder
-        User user = UserHolder.getUser();
+        UserDTO user = UserHolder.getUser();
         return Result.ok(user);
     }
 

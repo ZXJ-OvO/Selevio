@@ -1,6 +1,6 @@
 package com.zxj.utils;
 
-import com.zxj.entity.User;
+import com.zxj.dto.UserDTO;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +31,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
 
         // 5. if user is existing, save user information to ThreadLocal
-        UserHolder.saveUser((User) user);
+        UserHolder.saveUser((UserDTO) user);
 
         // 6. release the request
         return true;
