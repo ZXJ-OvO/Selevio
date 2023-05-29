@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 
 /**
- * 前端控制器
+ * shop
  */
 @RestController
 @RequestMapping("/shop")
@@ -22,13 +22,13 @@ public class ShopController {
     public IShopService shopService;
 
     /**
-     * 根据id查询商铺信息
-     * @param id 商铺id
-     * @return 商铺详情数据
+     * query shop by id
+     * @param id shop id
+     * @return shop data
      */
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id) {
-        return Result.ok(shopService.getById(id));
+        return shopService.queryById(id);
     }
 
     /**

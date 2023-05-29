@@ -19,4 +19,8 @@ public class SelevioApplication {
     login sms code: String  key value is simple string
     login user info: Hash   key value is complex object
 
+    double interceptor
+
+    cache
+
  */

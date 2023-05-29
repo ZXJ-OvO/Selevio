@@ -12,7 +12,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * 前端控制器
+ * shop type
  */
 @RestController
 @RequestMapping("/shop-type")
