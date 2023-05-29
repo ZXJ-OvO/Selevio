@@ -13,3 +13,10 @@ public class SelevioApplication {
     }
 
 }
+/*
+    principal:Choose the appropriate data type and take into account the valid duration.
+
+    login sms code: String  key value is simple string
+    login user info: Hash   key value is complex object
+
+ */

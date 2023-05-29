@@ -1,6 +1,7 @@
 package com.zxj.config;
 
 import com.zxj.utils.LoginInterceptor;
+import com.zxj.utils.RefreshTokenInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -26,7 +27,7 @@ public class MvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
 
         // add login interceptor
-        registry.addInterceptor(new LoginInterceptor(stringRedisTemplate))
+        registry.addInterceptor(new LoginInterceptor())
                 // exclude intercept path
                 .excludePathPatterns(
                         "/user/login",
@@ -36,6 +37,9 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/shop-type/**",
                         "/voucher/**",
                         "/shop/**"
-                );
+                ).order(1);
+        // refresh token interceptor
+        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate))
+                .addPathPatterns("/**").order(0);
     }
 }
