@@ -1,6 +1,8 @@
 package com.zxj.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zxj.dto.LoginFormDTO;
@@ -11,16 +13,25 @@ import com.zxj.mapper.UserMapper;
 import com.zxj.service.IUserService;
 import com.zxj.utils.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static com.zxj.utils.RedisConstants.*;
 import static com.zxj.utils.SystemConstants.USER_NICK_NAME_PREFIX;
 
 @Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * send phone verification code
@@ -30,18 +41,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 1. verify phone number
         if (RegexUtils.isPhoneInvalid(phone)) {
             // 2. if phone number is invalid, send error message
-            return Result.fail("手机号格式错误！");
+            return Result.fail("Invalid phone number format!");
         }
 
         // 3. if phone number is valid, generator verification code
         String code = RandomUtil.randomNumbers(6);
 
-        // 4. save verification code to session
-        session.setAttribute("code", code);
+        // 4. save verification code to redis, key is phone number, value is verification code
+        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code, LOGIN_CODE_TTL, TimeUnit.MINUTES);
 
         // 5. send verification code to phone number
         // TODO imitate sending verification code to phone number by SMS service provider such as Aliyun
-        log.debug("发送短信验证码成功，验证码{}", code);
+        log.debug("SMS verification code sent successfully, code: {}", code);
 
         // 6. return success message
         return Result.ok();
@@ -57,35 +68,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String phone = loginForm.getPhone();
         if (RegexUtils.isPhoneInvalid(phone)) {
             // 2. if phone number is invalid, send error message
-            return Result.fail("手机号格式错误！");
+            return Result.fail("Invalid phone number format!");
         }
 
-        // 2. verify verification code
-        Object cacheCode = session.getAttribute("code");
+        // 3. verify verification code
+        String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + phone);
         String code = loginForm.getCode();
-        if (cacheCode == null || !cacheCode.toString().equals(code)) {
-            // 3. mismatch, return error message
-            return Result.fail("验证码错误！");
+        if (cacheCode == null || !cacheCode.equals(code)) {
+            // 4. mismatch, return error message
+            return Result.fail("Verification code error!");
         }
 
-        // 4. match, select * from tb_user where phone = ?
+        // 5. match, select * from tb_user where phone = ?
         User user = query().eq("phone", phone).one();
 
-        // 5. judge whether the user is existing
+        // 6. judge whether the user is existing
         if (user == null) {
-            // 6. if user is not existing, create the new user and save to database
+            // 7. if user is not existing, create the new user and save to database
             user = createUserWithPhone(phone);
         }
 
-        // 7. save user information to session
-        session.setAttribute("user", BeanUtil.copyProperties(user, UserDTO.class));
+        // 8. save user information to redis todo
 
-        /*
-            The principle of session is the same as that of cookie.
-            Each session has its own unique id, which is automatically written into the cookie after making a request.
-            So there is no need to return the login certificate.
-         */
-        return Result.ok();
+        // 8.1 generate random token as login certificate
+        String token = UUID.randomUUID().toString(true);
+
+        // 8.2 Convert user object to HashMap type
+        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        Map<String, Object> userMap = BeanUtil.beanToMap(userDTO, new HashMap<>(), CopyOptions.create().
+                setIgnoreNullValue(true).
+                setFieldValueEditor((fieldName, fieldValue) ->fieldValue.toString()
+                ));
+
+        // 8.3 store into redis
+        String tokenKey = LOGIN_USER_KEY + token;
+        stringRedisTemplate.opsForHash().putAll(tokenKey, userMap);
+
+        // 8.4 set expiration time
+        stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+        // 9. return success message
+        return Result.ok(token);
     }
 
     /**
