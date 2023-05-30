@@ -9,10 +9,14 @@ import com.zxj.service.IShopService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.zxj.utils.RedisConstants.CACHE_SHOP_KEY;
+import static com.zxj.utils.RedisConstants.CACHE_SHOP_TTL;
 
 
 @Service
@@ -44,10 +48,31 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             return Result.fail("shop does not exist");
         }
 
-        // 6. if the database query result is not null, write the result to redis
-        stringRedisTemplate.opsForValue().set(CACHE_SHOP_KEY + id, JSONUtil.toJsonStr(shop));
+        // 6. if the database query result exists, write the result to redis
+        stringRedisTemplate.opsForValue().set(
+                CACHE_SHOP_KEY + id,
+                JSONUtil.toJsonStr(shop),
+                CACHE_SHOP_TTL,
+                TimeUnit.MINUTES);
 
         // 7. return the result
         return Result.ok(shop);
+    }
+
+    @Override
+    @Transactional
+    public Result update(Shop shop) {
+        Long id = shop.getId();
+        if (id == null){
+            return Result.fail("shop id is null");
+        }
+
+        // 1. update shop info in database
+        updateById(shop);
+
+        // 2. delete shop cache in redis
+        stringRedisTemplate.delete(CACHE_SHOP_KEY + id);
+
+        return Result.ok();
     }
 }
