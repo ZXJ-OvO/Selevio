@@ -25,8 +25,8 @@ public class ShopTypeController {
     // shop-type list cache into redis
     @GetMapping("list")
     public Result queryTypeList() {
-        List<ShopType> typeList = typeService.query().orderByAsc("sort").list();
-        //String typeList = typeService.queryShopTypes(); TODO DATA not encapsulation
+         List<ShopType> typeList = typeService.query().orderByAsc("sort").list();
+/*        return typeService.queryShopTypes();*/
         return Result.ok(typeList);
     }
 }

@@ -1,5 +1,6 @@
 package com.zxj.service;
 
+import com.zxj.dto.Result;
 import com.zxj.entity.ShopType;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -11,5 +12,5 @@ public interface IShopTypeService extends IService<ShopType> {
     /**
      * query shop types from redis
      */
-    //String queryShopTypes();
+/*    Result queryShopTypes();*/
 }
