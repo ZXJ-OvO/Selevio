@@ -15,8 +15,7 @@ import javax.annotation.Resource;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.zxj.utils.RedisConstants.CACHE_SHOP_KEY;
-import static com.zxj.utils.RedisConstants.CACHE_SHOP_TTL;
+import static com.zxj.utils.RedisConstants.*;
 
 
 @Service
@@ -35,9 +34,15 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
         // 2. estimate whether the cache exists
         if (StrUtil.isNotBlank(shopJson)) {
-            // 3. if the cache exists, return the cache
+            // 3. cache exists, return the cache
             Shop shop = JSONUtil.toBean(shopJson, Shop.class);
             return Result.ok(shop);
+        }
+
+        // 4. estimate whether hit the null value cache target
+        if (shopJson != null){
+            // 5. hit the null value cache target, return error message
+            return Result.fail("shop does not exist");
         }
 
         // 4. if the cache does not exist, query from database
@@ -45,20 +50,29 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
         // 5. if the database query result is null, return error message
         if (shop == null) {
+            // 6. write the null value to redis
+            stringRedisTemplate.opsForValue().set(
+                    CACHE_SHOP_KEY + id,
+                    "",
+                    CACHE_NULL_TTL,
+                    TimeUnit.MINUTES);
             return Result.fail("shop does not exist");
         }
 
-        // 6. if the database query result exists, write the result to redis
+        // 7. if the database query result exists, write the result to redis
         stringRedisTemplate.opsForValue().set(
                 CACHE_SHOP_KEY + id,
                 JSONUtil.toJsonStr(shop),
                 CACHE_SHOP_TTL,
                 TimeUnit.MINUTES);
 
-        // 7. return the result
+        // 8. return the result
         return Result.ok(shop);
     }
 
+    /**
+     * update shop info
+     */
     @Override
     @Transactional
     public Result update(Shop shop) {
