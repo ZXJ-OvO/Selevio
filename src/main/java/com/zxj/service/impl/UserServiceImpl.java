@@ -48,7 +48,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String code = RandomUtil.randomNumbers(6);
 
         // 4. save verification code to redis, key is phone number, value is verification code
-        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code, LOGIN_CODE_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(
+                LOGIN_CODE_KEY + phone, code,
+                LOGIN_CODE_TTL + RandomUtil.randomLong(-5,5),
+                TimeUnit.MINUTES);
 
         // 5. send verification code to phone number
         // TODO imitate sending verification code to phone number by SMS service provider such as Aliyun
@@ -105,7 +108,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         stringRedisTemplate.opsForHash().putAll(tokenKey, userMap);
 
         // 8.4 set expiration time
-        stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.expire(tokenKey
+                , LOGIN_USER_TTL + RandomUtil.randomLong(-5,5)
+                , TimeUnit.MINUTES);
 
         // 9. return success message
         return Result.ok(token);

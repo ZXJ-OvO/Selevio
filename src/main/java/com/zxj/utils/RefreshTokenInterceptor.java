@@ -1,6 +1,7 @@
 package com.zxj.utils;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.zxj.dto.UserDTO;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -56,7 +57,9 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         UserHolder.saveUser(userDTO);
 
         // 6. refresh token expiration time
-        stringRedisTemplate.expire(LOGIN_USER_KEY + token, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.expire(LOGIN_USER_KEY + token,
+                LOGIN_USER_TTL + RandomUtil.randomLong(-5,5),
+                TimeUnit.MINUTES);
 
         // 7. release the request
         return true;

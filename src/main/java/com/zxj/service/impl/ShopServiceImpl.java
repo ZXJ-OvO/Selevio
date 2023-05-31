@@ -1,5 +1,6 @@
 package com.zxj.service.impl;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.zxj.dto.Result;
@@ -40,7 +41,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         }
 
         // 4. estimate whether hit the null value cache target
-        if (shopJson != null){
+        if (shopJson != null) {
             // 5. hit the null value cache target, return error message
             return Result.fail("shop does not exist");
         }
@@ -54,7 +55,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             stringRedisTemplate.opsForValue().set(
                     CACHE_SHOP_KEY + id,
                     "",
-                    CACHE_NULL_TTL,
+                    CACHE_NULL_TTL + RandomUtil.randomLong(-5, 5),
                     TimeUnit.MINUTES);
             return Result.fail("shop does not exist");
         }
@@ -63,7 +64,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         stringRedisTemplate.opsForValue().set(
                 CACHE_SHOP_KEY + id,
                 JSONUtil.toJsonStr(shop),
-                CACHE_SHOP_TTL,
+                CACHE_SHOP_TTL + RandomUtil.randomLong(-5,5),
                 TimeUnit.MINUTES);
 
         // 8. return the result
@@ -77,7 +78,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Transactional
     public Result update(Shop shop) {
         Long id = shop.getId();
-        if (id == null){
+        if (id == null) {
             return Result.fail("shop id is null");
         }
 
